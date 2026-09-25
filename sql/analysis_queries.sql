@@ -1,42 +1,81 @@
--- Netflix Content Analysis - 10 Business Questions
+-- Netflix Content Strategy Analysis - 10 Business Queries
+-- Author: Sanjana
 
--- 1. Count of Movies vs TV Shows
-SELECT type, COUNT(*) as count FROM netflix GROUP BY type;
+-- Q1: Movies vs TV Shows Count (Content Mix)
+SELECT type, COUNT(*) AS total_count, 
+       ROUND(COUNT(*)*100.0/(SELECT COUNT(*) FROM netflix_titles),2) AS percentage
+FROM netflix_titles
+GROUP BY type;
 
--- 2. Top 10 Countries with most content
-SELECT country, COUNT(*) as total_content 
-FROM netflix 
-WHERE country != 'Unknown' AND country IS NOT NULL
-GROUP BY country ORDER BY total_content DESC LIMIT 10;
+-- Q2: Top 10 Countries by Content Production
+SELECT primary_country AS country, COUNT(*) AS total_content
+FROM netflix_titles
+WHERE primary_country != 'Unknown'
+GROUP BY primary_country
+ORDER BY total_content DESC
+LIMIT 10;
 
--- 3. Content added per year (Growth Trend)
-SELECT YEAR(STR_TO_DATE(date_added, '%M %d, %Y')) as year_added, COUNT(*) as count
-FROM netflix WHERE date_added IS NOT NULL
-GROUP BY year_added ORDER BY year_added;
+-- Q3: Content Added Per Year (Growth Trend) - Peak was 2019
+SELECT year_added, COUNT(*) AS content_added
+FROM netflix_titles
+WHERE year_added IS NOT NULL
+GROUP BY year_added
+ORDER BY year_added;
 
--- 4. Most common rating for Movies and TV Shows
-SELECT type, rating, COUNT(*) as count FROM netflix
-GROUP BY type, rating ORDER BY type, count DESC;
+-- Q4: Top 10 Genres (What Netflix Invests In)
+SELECT primary_genre AS genre, COUNT(*) AS total
+FROM netflix_titles
+GROUP BY primary_genre
+ORDER BY total DESC
+LIMIT 10;
 
--- 5. Top 10 Directors
-SELECT director, COUNT(*) as total FROM netflix
-WHERE director != 'Unknown' GROUP BY director ORDER BY total DESC LIMIT 10;
+-- Q5: Ratings Distribution (Target Audience)
+SELECT rating, COUNT(*) AS total,
+       ROUND(COUNT(*)*100.0/(SELECT COUNT(*) FROM netflix_titles),2) AS pct
+FROM netflix_titles
+WHERE rating != ''
+GROUP BY rating
+ORDER BY total DESC;
 
--- 6. List all Movies released in a specific year (e.g., 2020)
-SELECT title, release_year FROM netflix 
-WHERE type='Movie' AND release_year=2020;
+-- Q6: Top 10 Directors with Most Titles
+SELECT director, COUNT(*) AS total_titles
+FROM netflix_titles
+WHERE director != 'Unknown'
+GROUP BY director
+ORDER BY total_titles DESC
+LIMIT 10;
 
--- 7. Top 10 Genres (primary genre)
-SELECT listed_in, COUNT(*) as count FROM netflix
-GROUP BY listed_in ORDER BY count DESC LIMIT 10;
+-- Q7: Movies by Duration - Avg Movie Length
+SELECT 
+  CASE 
+    WHEN duration_value < 60 THEN '< 60 min'
+    WHEN duration_value BETWEEN 60 AND 120 THEN '60-120 min'
+    ELSE '> 120 min'
+  END AS duration_bucket,
+  COUNT(*) AS movie_count
+FROM netflix_titles
+WHERE type = 'Movie'
+GROUP BY duration_bucket
+ORDER BY movie_count DESC;
 
--- 8. Find content added in last 1 year
-SELECT * FROM netflix 
-WHERE STR_TO_DATE(date_added, '%M %d, %Y') >= DATE_SUB(CURDATE(), INTERVAL 1 YEAR);
+-- Q8: Content Added by Month (Seasonality)
+SELECT month_added, COUNT(*) AS total
+FROM netflix_titles
+WHERE month_added IS NOT NULL
+GROUP BY month_added
+ORDER BY total DESC;
 
--- 9. Average release year for Movies vs TV Shows
-SELECT type, AVG(release_year) as avg_year FROM netflix GROUP BY type;
+-- Q9: Movies vs TV Shows Added Each Year
+SELECT year_added, type, COUNT(*) AS total
+FROM netflix_titles
+WHERE year_added IS NOT NULL
+GROUP BY year_added, type
+ORDER BY year_added, type;
 
--- 10. Movies that are Documentaries
-SELECT title, listed_in FROM netflix 
-WHERE listed_in LIKE '%Documentaries%';
+-- Q10: India vs USA Content Over Years (Regional Strategy)
+SELECT year_added, primary_country, COUNT(*) AS total
+FROM netflix_titles
+WHERE primary_country IN ('United States', 'India', 'United Kingdom')
+AND year_added IS NOT NULL
+GROUP BY year_added, primary_country
+ORDER BY year_added;
