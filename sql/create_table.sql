@@ -1,14 +1,20 @@
-CREATE TABLE netflix (
-    show_id VARCHAR(20),
+CREATE TABLE netflix_titles (
+    show_id VARCHAR(20) PRIMARY KEY,
     type VARCHAR(20),
-    title TEXT,
-    director TEXT,
-    cast_members TEXT,
-    country TEXT,
+    title VARCHAR(500),
+    director VARCHAR(1000),
+    cast_list TEXT,
+    country VARCHAR(1000),
     date_added VARCHAR(50),
     release_year INT,
     rating VARCHAR(20),
-    duration VARCHAR(20),
-    listed_in TEXT,
-    description TEXT
+    duration VARCHAR(50),
+    listed_in VARCHAR(500),
+    description TEXT,
+    month_added VARCHAR(20),
+    year_added INT,
+    duration_value INT,
+    duration_type VARCHAR(20),
+    primary_country VARCHAR(100),
+    primary_genre VARCHAR(100)
 );
